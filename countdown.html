@@ -5,22 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Countdown Promo Payday</title>
 <style>
+  html,
   body {
     margin: 0;
     padding: 0;
-    background: #f2f2f2;
+    background: transparent !important;
     font-family: Arial, sans-serif;
+    overflow: hidden;
   }
 
   .countdown-wrapper {
     position: fixed;
-    bottom: 300px;
-    right: 18px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 9999;
-    width: 184px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
   }
 
   .countdown {
+    width: 140px;
+    box-sizing: border-box;
     text-align: center;
     background: #d81f26;
     color: #ffffff;
@@ -32,47 +40,75 @@
     border-radius: 6px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
   }
+
+  .hourglass {
+    font-size: 18px;          /* ukuran mengikuti tinggi countdown */
+    line-height: 1;
+    animation: flip 2.5s ease-in-out infinite;
+    transform-origin: center center;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    user-select: none;
+  }
+
+  @keyframes flip {
+    0%   { transform: rotate(0deg); }
+    40%  { transform: rotate(0deg); }
+    50%  { transform: rotate(180deg); }
+    90%  { transform: rotate(180deg); }
+    100% { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body>
-
 <div id="countdown-wrapper" class="countdown-wrapper">
   <div id="countdown" class="countdown">00:00:00</div>
+  <div class="hourglass">⏳</div>
 </div>
 
-<script>
-(function() {
-  // Ganti tanggal & jam target sesuai akhir promo
-  const targetDate = new Date("2026-09-30T23:59:59").getTime();
-
-  const countdownEl = document.getElementById("countdown");
-
-  function updateCountdown() {
-    const now = new Date().getTime();
-    const distance = targetDate - now;
-
-    if (distance <= 0) {
-      countdownEl.innerHTML = "Promo Berakhir";
-      clearInterval(timer);
-      return;
-    }
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    const pad = (n) => n.toString().padStart(2, "0");
-
-    countdownEl.innerHTML = days > 0
-      ? `${days}h ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
-      : `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  }
-
-  updateCountdown();
-  const timer = setInterval(updateCountdown, 1000);
-})();
+<script> 
+(function() { 
+  const countdownEl = document.getElementById("countdown"); 
+ 
+  const THREE_HOURS = 3 * 60 * 60 * 1000; 
+  const STORAGE_KEY = "tempo_countdown_end"; 
+ 
+  let endTime = localStorage.getItem(STORAGE_KEY); 
+ 
+  // Kalau belum ada countdown, mulai 3 jam 
+  if (!endTime) { 
+    endTime = Date.now() + THREE_HOURS; 
+    localStorage.setItem(STORAGE_KEY, endTime); 
+  } else { 
+    endTime = parseInt(endTime); 
+  } 
+ 
+  function updateCountdown() { 
+    const remaining = endTime - Date.now(); 
+ 
+    // Countdown habis → mulai lagi 3 jam 
+    if (remaining <= 0) { 
+      endTime = Date.now() + THREE_HOURS; 
+      localStorage.setItem(STORAGE_KEY, endTime); 
+    } 
+ 
+    const totalSeconds = Math.max( 
+      0, 
+      Math.floor((endTime - Date.now()) / 1000) 
+    ); 
+ 
+    const hours = Math.floor(totalSeconds / 3600); 
+    const minutes = Math.floor((totalSeconds % 3600) / 60); 
+    const seconds = totalSeconds % 60; 
+ 
+    const pad = (n) => n.toString().padStart(2, "0"); 
+ 
+    countdownEl.innerHTML = 
+      `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`; 
+  } 
+ 
+  updateCountdown(); 
+  setInterval(updateCountdown, 1000); 
+})(); 
 </script>
-
 </body>
 </html>
